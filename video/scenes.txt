@@ -1,0 +1,15 @@
+Every time a citizen applies for help, they hand the same documents to office after office.
+We built Citizen Consent Quorum. Agencies share citizen records, but a record opens only when the officer, a supervisor, and the citizen all approve.
+Three keys. No one opens it alone.
+Today, sharing means trusting the other agency's admins. Any administrator can rewrite the access rules. Any database admin can read the data.
+So agencies share as little as possible, and citizens pay for it.
+Attack one. Officer An tries a case that isn't his. A role check would let him in. The policy says no.
+Attack two. The admin grants himself access. TideCloak's change quorum keeps it pending. He cannot approve his own change.
+Attack three. The database admin reads the tables directly. Ciphertext only.
+Now, the real flow.
+An asks for access. His supervisor approves, but that isn't enough. Hoa, the citizen, approves, and a fifteen minute window opens.
+The record opens, with only the fields this purpose needs.
+Underneath, TideCloak splits every key across independent nodes. No admin, agency, or insider ever holds a whole one.
+Agency B asks one question, and gets one answer. Income eligible, yes. Never the file.
+Every attempt is logged, in a chain that can't be quietly edited.
+Citizens approve once. Agencies finally share. Insiders can't cheat.

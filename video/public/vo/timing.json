@@ -1,0 +1,126 @@
+{
+  "pad": 0.0,
+  "total": 84.85,
+  "scenes": [
+    {
+      "scene": 1,
+      "file": "public/vo/scene-01.wav",
+      "text": "Every time a citizen applies for help, they hand the same documents to office after office.",
+      "start": 0.0,
+      "duration": 5.84,
+      "end": 5.84
+    },
+    {
+      "scene": 2,
+      "file": "public/vo/scene-02.wav",
+      "text": "We built Citizen Consent Quorum. Agencies share citizen records, but a record opens only when the officer, a supervisor, and the citizen all approve.",
+      "start": 5.84,
+      "duration": 9.44,
+      "end": 15.28
+    },
+    {
+      "scene": 3,
+      "file": "public/vo/scene-03.wav",
+      "text": "Three keys. No one opens it alone.",
+      "start": 15.28,
+      "duration": 2.16,
+      "end": 17.44
+    },
+    {
+      "scene": 4,
+      "file": "public/vo/scene-04.wav",
+      "text": "Today, sharing means trusting the other agency's admins. Any administrator can rewrite the access rules. Any database admin can read the data.",
+      "start": 17.44,
+      "duration": 9.06,
+      "end": 26.5
+    },
+    {
+      "scene": 5,
+      "file": "public/vo/scene-05.wav",
+      "text": "So agencies share as little as possible, and citizens pay for it.",
+      "start": 26.5,
+      "duration": 4.16,
+      "end": 30.66
+    },
+    {
+      "scene": 6,
+      "file": "public/vo/scene-06.wav",
+      "text": "Attack one. Officer An tries a case that isn't his. A role check would let him in. The policy says no.",
+      "start": 30.66,
+      "duration": 6.24,
+      "end": 36.9
+    },
+    {
+      "scene": 7,
+      "file": "public/vo/scene-07.wav",
+      "text": "Attack two. The admin grants himself access. TideCloak's change quorum keeps it pending. He cannot approve his own change.",
+      "start": 36.9,
+      "duration": 7.8,
+      "end": 44.7
+    },
+    {
+      "scene": 8,
+      "file": "public/vo/scene-08.wav",
+      "text": "Attack three. The database admin reads the tables directly. Ciphertext only.",
+      "start": 44.7,
+      "duration": 5.0,
+      "end": 49.7
+    },
+    {
+      "scene": 9,
+      "file": "public/vo/scene-09.wav",
+      "text": "Now, the real flow.",
+      "start": 49.7,
+      "duration": 1.84,
+      "end": 51.54
+    },
+    {
+      "scene": 10,
+      "file": "public/vo/scene-10.wav",
+      "text": "An asks for access. His supervisor approves, but that isn't enough. Hoa, the citizen, approves, and a fifteen minute window opens.",
+      "start": 51.54,
+      "duration": 8.16,
+      "end": 59.7
+    },
+    {
+      "scene": 11,
+      "file": "public/vo/scene-11.wav",
+      "text": "The record opens, with only the fields this purpose needs.",
+      "start": 59.7,
+      "duration": 3.8,
+      "end": 63.5
+    },
+    {
+      "scene": 12,
+      "file": "public/vo/scene-12.wav",
+      "text": "Underneath, TideCloak splits every key across independent nodes. No admin, agency, or insider ever holds a whole one.",
+      "start": 63.5,
+      "duration": 7.41,
+      "end": 70.91
+    },
+    {
+      "scene": 13,
+      "file": "public/vo/scene-13.wav",
+      "text": "Agency B asks one question, and gets one answer. Income eligible, yes. Never the file.",
+      "start": 70.91,
+      "duration": 5.4,
+      "end": 76.31
+    },
+    {
+      "scene": 14,
+      "file": "public/vo/scene-14.wav",
+      "text": "Every attempt is logged, in a chain that can't be quietly edited.",
+      "start": 76.31,
+      "duration": 4.16,
+      "end": 80.47
+    },
+    {
+      "scene": 15,
+      "file": "public/vo/scene-15.wav",
+      "text": "Citizens approve once. Agencies finally share. Insiders can't cheat.",
+      "start": 80.47,
+      "duration": 4.38,
+      "end": 84.85
+    }
+  ]
+}
