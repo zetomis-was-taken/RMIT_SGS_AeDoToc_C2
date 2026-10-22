@@ -53,12 +53,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMe(m?.id ? m : null)
     if (m?.id) {
       const [c, r, ch, a] = await Promise.all([api('cases'), api('requests'), api('changes'), api('audit')])
-      setCases(c.data); setReqs(r.data); setChanges(ch.data); setLog(a.data)
+      // a failed request answers with an error object, not a list — keep the last good data rather than storing it
+      if (Array.isArray(c.data)) setCases(c.data)
+      if (Array.isArray(r.data)) setReqs(r.data)
+      if (Array.isArray(ch.data)) setChanges(ch.data)
+      if (Array.isArray(a.data)) setLog(a.data)
     }
     setBooted(true)
   }, [])
 
-  useEffect(() => { api('users').then(r => setUsers(r.data)); refresh() }, [refresh])
+  useEffect(() => { api('users').then(r => { if (Array.isArray(r.data)) setUsers(r.data) }); refresh() }, [refresh])
   // light polling so an approver's vote shows up for the requester without a manual reload
   useEffect(() => { const t = setInterval(() => { if (document.visibilityState === 'visible') refresh() }, 6000); return () => clearInterval(t) }, [refresh])
 
