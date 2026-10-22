@@ -1,0 +1,12 @@
+venv/
+.obsidian/
+hackathon_prep/
+challenge/
+*.pdf
+*.html
+node_modules/
+.next/
+.env
+.env.local
+app/data/*.db*
+tsconfig.tsbuildinfo
