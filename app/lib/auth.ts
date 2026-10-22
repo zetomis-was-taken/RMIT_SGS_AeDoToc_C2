@@ -14,6 +14,10 @@ export const USERS: User[] = [
   { id: 'admin_dung', name: 'Dung (System Admin)', role: 'admin' },
   { id: 'cz_hoa', name: 'Hoa (Citizen)', role: 'citizen', citizenId: 'cz-hoa' },
   { id: 'cz_nam', name: 'Nam (Citizen)', role: 'citizen', citizenId: 'cz-nam' },
+  { id: 'cz_lien', name: 'Lien (Citizen)', role: 'citizen', citizenId: 'cz-lien' },
+  { id: 'cz_tuan', name: 'Tuan (Citizen)', role: 'citizen', citizenId: 'cz-tuan' },
+  { id: 'cz_mai', name: 'Mai (Citizen)', role: 'citizen', citizenId: 'cz-mai' },
+  { id: 'cz_son', name: 'Son (Citizen)', role: 'citizen', citizenId: 'cz-son' },
   { id: 'agencyb_lan', name: 'Lan (Officer, Agency B)', role: 'agency_b' },
 ]
 
