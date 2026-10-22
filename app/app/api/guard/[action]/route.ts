@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { COOKIE, currentUser, makeSession, userById, USERS } from '@/lib/auth'
-import { Denied, eligibility, listAudit, listCases, listChanges, listRequests, proposeChange, readRecord, requestAccess, voteAccess, voteChange } from '@/lib/guard'
-import { audit, db } from '@/lib/db'
+import { Denied, verifyChain, eligibility, listAudit, listCases, listChanges, listRequests, proposeChange, readRecord, requestAccess, voteAccess, voteChange } from '@/lib/guard'
+import { audit, db, resetDb } from '@/lib/db'
+import { runScenario, SCENARIOS } from '@/lib/lab'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const fail = (e: unknown) => {
-  if (e instanceof Denied) return NextResponse.json({ error: e.message }, { status: e.status })
+  if (e instanceof Denied) return NextResponse.json({ error: e.message, code: e.code }, { status: e.status })
   console.error(e)
   return NextResponse.json({ error: 'Internal error' }, { status: 500 })
 }
@@ -28,7 +29,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ action: str
       case 'cases': return NextResponse.json(listCases(u))
       case 'requests': return NextResponse.json(listRequests(u))
       case 'changes': return NextResponse.json(listChanges())
-      case 'audit': return NextResponse.json(listAudit())
+      case 'audit': return NextResponse.json(listAudit(300))
+      case 'verify': return NextResponse.json(verifyChain())
+      case 'scenarios': return NextResponse.json(SCENARIOS)
       case 'record': return NextResponse.json(readRecord(u, q.get('caseId') ?? ''))
       case 'eligibility': return NextResponse.json(eligibility(u, q.get('caseId') ?? ''))
     }
@@ -53,6 +56,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ action: st
     const u = await currentUser()
     if (!u) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
     switch (action) {
+      case 'lab': return NextResponse.json(await runScenario(body.id))
+      case 'reset': resetDb(); audit(u.id, 'reset_demo', '-', 'INFO', 'demo data reset'); return NextResponse.json({ ok: true })
       case 'request-access':
         return NextResponse.json({ id: requestAccess(u, body.caseId, body.kind, body.purpose ?? '') })
       case 'vote-access':

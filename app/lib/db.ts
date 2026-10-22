@@ -46,6 +46,14 @@ export function db(): DatabaseSync {
   return d
 }
 
+export function resetDb() {
+  const d = db()
+  for (const t of ['citizens', 'cases', 'assignments', 'settings', 'access_requests', 'request_votes', 'policy_changes', 'policy_votes', 'audit'])
+    d.exec(`DELETE FROM ${t}`)
+  d.exec("DELETE FROM sqlite_sequence")
+  seed(d)
+}
+
 function seed(d: DatabaseSync) {
   const has = d.prepare('SELECT COUNT(*) AS n FROM citizens').get() as { n: number }
   if (has.n > 0) return

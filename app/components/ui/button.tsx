@@ -2,13 +2,20 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-// The design system has ONE button: white fill, 1.5px iris border, 16px radius. No filled variant.
+// default = filled iris (the one primary action per context); outline = iris border; destructive = danger outline.
 const buttonVariants = cva(
-  "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-[16px] border-[1.5px] border-iris bg-white font-medium text-iris whitespace-nowrap outline-none select-none focus-visible:underline disabled:pointer-events-none disabled:opacity-40",
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-[12px] border-[1.5px] font-medium whitespace-nowrap outline-none select-none transition-colors duration-150 disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
-      variant: { default: "", outline: "", ghost: "", secondary: "", destructive: "", link: "" },
-      size: { default: "px-4 py-2 text-[14px]", sm: "px-3 py-1 text-[13px]", lg: "px-8 py-4 text-[16px]", xs: "px-2 py-0.5 text-[13px]", icon: "size-9", "icon-sm": "size-7", "icon-xs": "size-6", "icon-lg": "size-11" },
+      variant: {
+        default: "border-iris bg-iris text-white hover:bg-[#1c1cc4]",
+        outline: "border-iris bg-white text-iris hover:bg-iris-50",
+        secondary: "border-iris bg-white text-iris hover:bg-iris-50",
+        destructive: "border-danger bg-white text-danger hover:bg-danger-bg",
+        ghost: "border-transparent bg-transparent text-iris hover:bg-iris-50",
+        link: "border-transparent bg-transparent text-iris underline underline-offset-4",
+      },
+      size: { default: "px-3.5 py-1.5 text-[13px]", sm: "px-2.5 py-1 text-[12px]", lg: "px-5 py-2.5 text-[14px]", xs: "px-2 py-0.5 text-[12px]", icon: "size-9", "icon-sm": "size-7", "icon-xs": "size-6", "icon-lg": "size-11" },
     },
     defaultVariants: { variant: "default", size: "default" },
   }

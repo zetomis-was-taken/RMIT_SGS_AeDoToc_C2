@@ -1,5 +1,5 @@
 import { audit, db } from './db'
-import { decryptField } from './crypto'
+import { decryptField, sha } from './crypto'
 import type { User } from './auth'
 import { USERS } from './auth'
 
@@ -9,9 +9,24 @@ const all = (sql: string, ...a: any[]) => db().prepare(sql).all(...a) as Row[]
 const one = (sql: string, ...a: any[]) => db().prepare(sql).get(...a) as Row | undefined
 const run = (sql: string, ...a: any[]) => db().prepare(sql).run(...a)
 
+const CODES: [RegExp, string][] = [
+  [/not assigned|out of scope/i, 'OUT_OF_SCOPE'],
+  [/needs supervisor and citizen/i, 'LOCKED_NO_CONSENT'],
+  [/own request|you requested/i, 'SELF_APPROVAL_BLOCKED'],
+  [/only .*(approve|vote)|only supervisors/i, 'NOT_AN_APPROVER'],
+  [/only admins/i, 'ADMIN_ONLY'],
+  [/only (the assigned officer|agency b)|may not read/i, 'ROLE_NOT_ALLOWED'],
+  [/no such/i, 'NOT_FOUND'],
+  [/already/i, 'ALREADY_RESOLVED'],
+]
 export class Denied extends Error {
   status: number
-  constructor(msg: string, status = 403) { super(msg); this.status = status }
+  code: string
+  constructor(msg: string, status = 403) {
+    super(msg)
+    this.status = status
+    this.code = CODES.find(([re]) => re.test(msg))?.[1] ?? 'FORBIDDEN'
+  }
 }
 
 const isAssigned = (caseId: string, userId: string) =>
@@ -23,15 +38,19 @@ const supervisors = () => USERS.filter(u => u.role === 'supervisor')
 export function listCases(u: User) {
   const cases = all('SELECT * FROM cases ORDER BY id')
   return cases
-    .map((c): Row => ({
-      ...c,
-      assignedTo: all('SELECT user_id FROM assignments WHERE case_id=?', c.id).map(r => r.user_id),
-    }))
-    .filter(c => {
-      if (u.role === 'officer') return c.assignedTo.includes(u.id)
-      if (u.role === 'citizen') return c.citizen_id === u.citizenId
-      return true // supervisor / admin / agency_b see case metadata only
+    .map((c): Row => {
+      const g = all(
+        "SELECT kind, expires_at FROM access_requests WHERE case_id=? AND requester=? AND status='granted' AND expires_at>?",
+        c.id, u.id, Date.now(),
+      )
+      return {
+        ...c,
+        assignedTo: all('SELECT user_id FROM assignments WHERE case_id=?', c.id).map(r => r.user_id),
+        grants: g,
+      }
     })
+    // metadata is not sensitive: everyone sees the case index; a citizen only sees their own
+    .filter(c => (u.role === 'citizen' ? c.citizen_id === u.citizenId : true))
 }
 
 // ---------- access requests (consent quorum) ----------
@@ -119,13 +138,17 @@ function activeGrant(u: User, caseId: string, kind: string) {
 export function readRecord(u: User, caseId: string) {
   const c = one('SELECT * FROM cases WHERE id=?', caseId)
   if (!c) throw new Denied('No such case', 404)
-  if (u.role !== 'officer' || !isAssigned(caseId, u.id)) {
-    audit(u.id, 'read_record', caseId, 'DENY', u.role === 'officer' ? 'out of scope: not assigned' : `role ${u.role} may not read records`)
-    throw new Denied('Out of scope: you are not assigned to this case')
+  if (u.role !== 'officer') {
+    audit(u.id, 'read_record', caseId, 'DENY', `role ${u.role} may not read records`)
+    throw new Denied(`Your role (${u.role}) may not read citizen records`)
+  }
+  if (!isAssigned(caseId, u.id)) {
+    audit(u.id, 'read_record', caseId, 'DENY', 'out of scope: not assigned')
+    throw new Denied('You are not assigned to this case')
   }
   if (!activeGrant(u, caseId, 'full_view')) {
     audit(u.id, 'read_record', caseId, 'DENY', 'no active consent-quorum grant')
-    throw new Denied('Locked: needs supervisor + citizen approval first')
+    throw new Denied('This record needs supervisor and citizen approval first')
   }
   const z = one('SELECT * FROM citizens WHERE id=?', c.citizen_id)!
   audit(u.id, 'read_record', caseId, 'ALLOW', 'fields: name, national_id, income, address (health withheld)')
@@ -143,7 +166,7 @@ export function eligibility(u: User, caseId: string) {
   if (!c) throw new Denied('No such case', 404)
   if (u.role !== 'agency_b' || !activeGrant(u, caseId, 'eligibility_check')) {
     audit(u.id, 'read_eligibility', caseId, 'DENY', 'no active grant')
-    throw new Denied('Locked: needs supervisor + citizen approval first')
+    throw new Denied('This record needs supervisor and citizen approval first')
   }
   const z = one('SELECT * FROM citizens WHERE id=?', c.citizen_id)!
   const limit = Number(one("SELECT value FROM settings WHERE key='income_threshold'")!.value)
@@ -206,3 +229,15 @@ export function listChanges() {
 }
 
 export const listAudit = (limit = 100) => all('SELECT * FROM audit ORDER BY id DESC LIMIT ?', limit)
+
+// Recompute the hash chain: any edited/removed audit row breaks it.
+export function verifyChain() {
+  const rows = all('SELECT * FROM audit ORDER BY id ASC')
+  let prev = 'GENESIS'
+  for (const r of rows) {
+    const h = sha(`${prev}|${r.at}|${r.actor}|${r.action}|${r.target}|${r.decision}|${r.detail}`)
+    if (r.prev_hash !== prev || r.hash !== h) return { ok: false, entries: rows.length, brokenAt: r.id }
+    prev = r.hash
+  }
+  return { ok: true, entries: rows.length, brokenAt: null }
+}
