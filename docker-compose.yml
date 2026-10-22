@@ -1,0 +1,26 @@
+name: citizen-data-guard
+
+services:
+  tidecloak:
+    image: tideorg/tidecloak-dev:${TIDECLOAK_VERSION:-0.14.41}
+    container_name: cdg-tidecloak
+    restart: unless-stopped
+    ports:
+      # Bind to localhost by default. Set TIDECLOAK_BIND_ADDRESS=0.0.0.0 in .env
+      # if another device (phone, tablet, teammate) needs to reach the demo.
+      - "${TIDECLOAK_BIND_ADDRESS:-127.0.0.1}:${TIDECLOAK_PORT:-8080}:8080"
+    environment:
+      # Only used on the very first boot, while the database is still empty.
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${TIDECLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${TIDECLOAK_ADMIN_PASSWORD:-password}
+      KC_LOG_LEVEL: ${TIDECLOAK_LOG_LEVEL:-info}
+    volumes:
+      # H2 database + realm keys. Keep this volume: losing it means re-enrolling
+      # the realm with Tide from scratch.
+      # Mount the parent data directory (not .../data/h2): the h2 folder does not
+      # exist in the image, so Docker would create it owned by root and Keycloak
+      # (uid 1000) could not write to it.
+      - tidecloak-data:/opt/keycloak/data
+
+volumes:
+  tidecloak-data:

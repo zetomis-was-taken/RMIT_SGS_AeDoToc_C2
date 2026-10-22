@@ -1,0 +1,11 @@
+# Local secrets and environment overrides
+.env
+.env.local
+
+# TideCloak state if a bind mount is used instead of the named volume
+.tidecloak/
+
+# Application artefacts
+node_modules/
+.next/
+*.log
