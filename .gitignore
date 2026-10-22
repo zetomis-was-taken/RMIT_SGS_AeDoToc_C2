@@ -6,8 +6,15 @@ challenge/
 *.html
 node_modules/
 .next/
+*.log
+
+# Local secrets and environment overrides
 .env
 .env.local
+
+# TideCloak state if a bind mount is used instead of the named volume
+.tidecloak/
+
 app/data/*.db*
 tsconfig.tsbuildinfo
 
