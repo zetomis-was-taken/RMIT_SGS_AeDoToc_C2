@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { COOKIE, currentUser, makeSession, userById, USERS } from '@/lib/auth'
+import { authenticate, USERS } from '@/lib/auth'
+import { AuthError, type Check } from '@/lib/tide-sim/jwt'
 import { Denied, verifyChain, eligibility, listAudit, listCases, listChanges, listRequests, proposeChange, readRecord, requestAccess, voteAccess, voteChange } from '@/lib/guard'
 import { audit, db, resetDb } from '@/lib/db'
 import { runScenario, SCENARIOS } from '@/lib/lab'
@@ -9,10 +9,12 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const fail = (e: unknown) => {
-  if (e instanceof Denied) return NextResponse.json({ error: e.message, code: e.code }, { status: e.status })
+  if (e instanceof AuthError) return NextResponse.json({ error: e.message, code: e.code, checks: e.checks }, { status: 401 })
+  if (e instanceof Denied) return NextResponse.json({ error: e.message, code: e.code, tide: e.tide }, { status: e.status })
   console.error(e)
   return NextResponse.json({ error: 'Internal error' }, { status: 500 })
 }
+const publicUser = (u: ReturnType<typeof authenticate>['user']) => ({ id: u.id, name: u.name, role: u.role, citizenId: u.citizenId, tideuserkey: u.tideuserkey })
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ action: string }> }) {
   const { action } = await ctx.params
@@ -20,11 +22,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ action: str
   try {
     db()
     if (action === 'users') return NextResponse.json(USERS)
-    // Demo of attack #3: what a DBA with raw database access sees. No auth on purpose: this is the storage layer.
+    // Attack #3: what a DBA with raw database access sees. No auth on purpose: this is the storage layer.
     if (action === 'dba') return NextResponse.json(db().prepare('SELECT * FROM citizens').all())
-    const u = await currentUser()
-    if (action === 'me') return NextResponse.json(u)
-    if (!u) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    if (action === 'me') {
+      // signed-out is a normal answer here, not an error
+      try { return NextResponse.json(publicUser(authenticate(req).user)) } catch (e) { if (e instanceof AuthError) return NextResponse.json(null); throw e }
+    }
+    const { user: u } = authenticate(req)
     switch (action) {
       case 'cases': return NextResponse.json(listCases(u))
       case 'requests': return NextResponse.json(listRequests(u))
@@ -44,28 +48,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ action: st
   const body = await req.json().catch(() => ({}))
   try {
     db()
-    const jar = await cookies()
-    if (action === 'login') {
-      const user = userById(body.userId)
-      if (!user) return NextResponse.json({ error: 'Unknown user' }, { status: 400 })
-      jar.set(COOKIE, makeSession(user.id), { httpOnly: true, sameSite: 'lax', path: '/' })
-      audit(user.id, 'login', '-', 'INFO', 'demo persona')
-      return NextResponse.json(user)
-    }
-    if (action === 'logout') { jar.delete(COOKIE); return NextResponse.json({ ok: true }) }
-    const u = await currentUser()
-    if (!u) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    const { user: u } = authenticate(req)
     switch (action) {
       case 'lab': return NextResponse.json(await runScenario(body.id))
       case 'reset': resetDb(); audit(u.id, 'reset_demo', '-', 'INFO', 'demo data reset'); return NextResponse.json({ ok: true })
-      case 'request-access':
-        return NextResponse.json({ id: requestAccess(u, body.caseId, body.kind, body.purpose ?? '') })
-      case 'vote-access':
-        return NextResponse.json({ status: voteAccess(u, Number(body.id), body.decision) })
-      case 'propose-change':
-        return NextResponse.json({ id: proposeChange(u, body.change, body.payload ?? {}) }, { status: 202 })
-      case 'vote-change':
-        return NextResponse.json({ status: voteChange(u, Number(body.id), body.decision) })
+      case 'request-access': return NextResponse.json({ id: requestAccess(u, body.caseId, body.kind, body.purpose ?? '') })
+      case 'vote-access': return NextResponse.json({ status: voteAccess(u, Number(body.id), body.decision) })
+      case 'propose-change': return NextResponse.json({ id: proposeChange(u, body.change, body.payload ?? {}) }, { status: 202 })
+      case 'vote-change': return NextResponse.json({ status: voteChange(u, Number(body.id), body.decision) })
     }
     return NextResponse.json({ error: 'Unknown action' }, { status: 404 })
   } catch (e) { return fail(e) }

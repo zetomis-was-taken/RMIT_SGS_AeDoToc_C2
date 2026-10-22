@@ -10,3 +10,6 @@ node_modules/
 .env.local
 app/data/*.db*
 tsconfig.tsbuildinfo
+
+# simulated Tide realm: keys and ORK shares are generated on first run
+app/data/tide-sim/

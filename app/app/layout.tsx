@@ -7,16 +7,18 @@ const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-inter'
 const tight = Inter_Tight({ subsets: ['latin', 'vietnamese'], variable: '--font-inter-tight', weight: ['500', '700'] })
 
 export const metadata: Metadata = {
-  title: 'Citizen Consent Quorum',
+  title: 'Citizen Consent Quorum — Zero-Trust Data Sharing',
   description: 'Cross-agency citizen data sharing where no admin, agency or insider can open a record alone. The citizen is part of the approval.',
 }
 
-export const viewport: Viewport = { themeColor: '#eeeeee', colorScheme: 'light' }
+export const viewport: Viewport = { themeColor: '#f0f2f8', colorScheme: 'light' }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${tight.variable}`}>
-      <body>{children}</body>
+      <body className="min-h-screen bg-[#f0f2f8] text-[#111827] selection:bg-[#2727e6] selection:text-white antialiased">
+        {children}
+      </body>
     </html>
   )
 }

@@ -23,31 +23,96 @@ export default function Requests() {
 
   return (
     <>
-      <PageTitle title="Consent requests">A record opens only when the supervisor and the citizen who owns it both approve. Each grant lasts 15 minutes and covers one purpose.</PageTitle>
-      <Panel title={`${rows.length} request${rows.length === 1 ? '' : 's'}`} action={
-        <div className="flex gap-2">{['all', 'pending', 'granted', 'denied'].map(k => (
-          <button key={k} onClick={() => { setF(k); setPage(1) }} aria-pressed={f === k} className={`t-nav rounded-[4px] px-2.5 py-1 capitalize ${f === k ? 'bg-ink text-white' : 'bg-canvas hover:bg-rule'}`}>{k}</button>
-        ))}</div>}>
+      <PageTitle title="Consent Quorum Requests">
+        A citizen record unlocks only when the supervisor and the citizen who owns it both independently approve. Each grant is time-boxed to 15 minutes and strictly scoped to one verified purpose.
+      </PageTitle>
+      
+      <Panel
+        title={`${rows.length} request${rows.length === 1 ? '' : 's'}`}
+        action={
+          <div className="flex items-center gap-1.5">
+            {['all', 'pending', 'granted', 'denied'].map(k => (
+              <button
+                key={k}
+                onClick={() => { setF(k); setPage(1) }}
+                aria-pressed={f === k}
+                className={`t-nav rounded-full px-3.5 py-1 text-xs font-semibold capitalize transition-all duration-150 ${
+                  f === k
+                    ? 'bg-gradient-to-r from-[#2727e6] to-[#3b5bf5] text-white shadow-[0_2px_12px_rgba(39,39,230,0.28)]'
+                    : 'border border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                {k}
+              </button>
+            ))}
+          </div>
+        }
+      >
         <Table>
-          <TableHeader><TableRow>{['Request', 'Purpose', 'Approvals', 'Status', ''].map(h => <TableHead key={h} className="text-ash">{h}</TableHead>)}</TableRow></TableHeader>
+          <TableHeader>
+            <TableRow>
+              {['Request & Target', 'Stated Purpose', 'Quorum Status', 'Decision', ''].map(h => (
+                <TableHead key={h}>{h}</TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
           <TableBody>
-            {!booted && <TableRow><TableCell colSpan={5}><Empty loading>Loading requests…</Empty></TableCell></TableRow>}
-            {booted && view.length === 0 && <TableRow><TableCell colSpan={5}><Empty>{reqs.length === 0 ? 'No requests yet. An officer opens one from a case.' : 'No requests with this status.'}</Empty></TableCell></TableRow>}
+            {!booted && (
+              <TableRow>
+                <TableCell colSpan={5}><Empty loading>Loading requests…</Empty></TableCell>
+              </TableRow>
+            )}
+            {booted && view.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <Empty>{reqs.length === 0 ? 'No requests yet. An assigned case officer opens one from a case.' : 'No requests match this filter.'}</Empty>
+                </TableCell>
+              </TableRow>
+            )}
             {view.map(r => {
               const v = (role: string) => r.votes.find((x: any) => x.voter_role === role)?.decision
               return (
                 <TableRow key={r.id} className="align-top">
-                  <TableCell><div className="font-bold"><span className="mono">#{r.id}</span> <Link href={`/app/cases/${r.case_id}`} className="underline underline-offset-4">{r.case_id}</Link></div><div className="text-[12px] text-ash">{r.kind === 'full_view' ? 'Full view' : 'Eligibility check'} · {r.requester} · {ago(r.created_at)}</div></TableCell>
-                  <TableCell className="max-w-[220px] whitespace-normal text-ash">{r.purpose}</TableCell>
-                  <TableCell><div className="flex flex-col gap-0.5"><Vote role="Supervisor" v={v('supervisor')} /><Vote role="Citizen" v={v('citizen')} /></div></TableCell>
-                  <TableCell><Status s={r.status} /></TableCell>
+                  <TableCell>
+                    <div className="font-bold text-gray-900 flex items-center gap-2">
+                      <span className="mono font-mono text-xs text-[#2727e6]">#{r.id}</span>
+                      <Link href={`/app/cases/${r.case_id}`} className="hover:text-[#2727e6] underline underline-offset-4 transition-colors">
+                        {r.case_id}
+                      </Link>
+                    </div>
+                    <div className="text-[12px] text-gray-500 mt-1">
+                      {r.kind === 'full_view' ? 'Full view' : 'Eligibility check'} · {r.requester} · {ago(r.created_at)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-w-[240px] whitespace-normal text-gray-600 text-xs leading-relaxed">
+                    {r.purpose}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <Vote role="Supervisor" v={v('supervisor')} />
+                      <Vote role="Citizen" v={v('citizen')} />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Status s={r.status} />
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap justify-end gap-2">
-                      {approver(r) && <>
-                        <Button size="sm" onClick={() => act('vote-access', { id: r.id, decision: 'approve' }, { title: 'Vote recorded', message: `You approved request #${r.id}` })}><Check />Approve</Button>
-                        <Button size="sm" variant="outline" onClick={() => act('vote-access', { id: r.id, decision: 'deny' }, { title: 'Request denied', message: `You denied request #${r.id}` })}><X />Deny</Button>
-                      </>}
-                      {r.status === 'pending' && r.requester === me.id && <Button size="sm" variant="destructive" onClick={() => act('vote-access', { id: r.id, decision: 'approve' })}><ShieldOff />Approve my own</Button>}
+                      {approver(r) && (
+                        <>
+                          <Button size="sm" onClick={() => act('vote-access', { id: r.id, decision: 'approve' }, { title: 'Vote recorded', message: `You approved request #${r.id}` })}>
+                            <Check />Approve
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => act('vote-access', { id: r.id, decision: 'deny' }, { title: 'Request denied', message: `You denied request #${r.id}` })}>
+                            <X />Deny
+                          </Button>
+                        </>
+                      )}
+                      {r.status === 'pending' && r.requester === me.id && (
+                        <Button size="sm" variant="destructive" onClick={() => act('vote-access', { id: r.id, decision: 'approve' })}>
+                          <ShieldOff />Approve my own
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

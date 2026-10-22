@@ -1,6 +1,6 @@
 // Which pages each role may open. The UI uses this to build the menu and show "restricted" pages;
 // the API enforces the same rules again on the server, so editing client state gets you nothing.
-export type PageId = 'overview' | 'cases' | 'requests' | 'policy' | 'audit' | 'lab' | 'demo'
+export type PageId = 'overview' | 'cases' | 'requests' | 'policy' | 'audit' | 'lab' | 'demo' | 'tide'
 
 export const PAGE_ROLES: Record<PageId, string[]> = {
   overview: ['officer', 'supervisor', 'admin', 'citizen', 'agency_b'],
@@ -10,6 +10,7 @@ export const PAGE_ROLES: Record<PageId, string[]> = {
   audit: ['officer', 'supervisor', 'admin', 'citizen', 'agency_b'],
   lab: ['officer', 'supervisor', 'admin', 'citizen', 'agency_b'],
   demo: ['officer', 'supervisor', 'admin', 'citizen', 'agency_b'],
+  tide: ['officer', 'supervisor', 'admin', 'citizen', 'agency_b'],
 }
 export const canOpen = (role: string, page: PageId) => PAGE_ROLES[page].includes(role)
 

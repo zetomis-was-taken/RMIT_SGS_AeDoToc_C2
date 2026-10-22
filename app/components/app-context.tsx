@@ -1,8 +1,9 @@
 'use client'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, type R, type U } from '@/lib/client'
+import { clearSession, getSession, signIn } from '@/lib/tide-client'
 
-export interface Toast { id: number; kind: 'violation' | 'success' | 'info'; title: string; message: string; code?: string }
+export interface Toast { id: number; kind: 'violation' | 'success' | 'info'; title: string; message: string; code?: string; tide?: string }
 
 interface Ctx {
   users: U[]; me: U | null; cases: R[]; reqs: R[]; changes: R[]; log: R[]
@@ -14,6 +15,8 @@ interface Ctx {
   /** POST an action; 403 becomes a violation toast, other failures an info toast. */
   act: (action: string, body: R, ok?: { title: string; message: string }) => Promise<{ ok: boolean; data: R; status: number }>
   login: (id: string) => Promise<void>
+  /** full simulated TideCloak sign-in; resolves with the ORK votes, rejects with SignInError */
+  signInAs: (username: string, password: string) => Promise<{ ork: { votes: { ork: number; ok: boolean }[] } }>
   logout: () => Promise<void>
 }
 
@@ -69,20 +72,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const act: Ctx['act'] = useCallback(async (action, body, ok) => {
     const r = await api(action, body)
     if (r.ok) { if (ok) notify({ kind: 'success', ...ok }) }
-    else if (r.status === 403) notify({ kind: 'violation', title: 'Access denied', message: r.data.error ?? 'Not permitted', code: r.data.code })
+    else if (r.status === 403) notify({ kind: 'violation', title: 'Access denied', message: r.data.error ?? 'Not permitted', code: r.data.code, tide: r.data.tide })
+    else if (r.status === 401) { notify({ kind: 'violation', title: 'Not authenticated', message: r.data.error ?? 'Sign in again', code: r.data.code }); if (r.data.code === 'TOKEN_EXPIRED') await clearSession() }
     else notify({ kind: 'info', title: `Request failed (${r.status})`, message: r.data.error ?? 'Unexpected error', code: r.data.code })
     await refresh()
     return r
   }, [notify, refresh])
 
-  const login = useCallback(async (id: string) => {
-    await api('login', { userId: id })
+  const signInAs = useCallback(async (username: string, password: string) => {
+    const j = await signIn(username, password)
     selectCase(null)
     await refresh()
+    return j
   }, [refresh])
-  const logout = useCallback(async () => { await api('logout', {}); setMe(null); setLog([]); selectCase(null) }, [])
+  // demo shortcut used by the account switcher and the guided demo: same token path, password supplied for you
+  const login = useCallback(async (id: string) => { await signInAs(id, 'demo') }, [signInAs])
+  const logout = useCallback(async () => { await clearSession(); setMe(null); setLog([]); setCases([]); setReqs([]); setChanges([]); selectCase(null) }, [])
 
   const violations = useMemo(() => Math.max(sessionViolations, 0), [sessionViolations])
-  const value: Ctx = { users, me, cases, reqs, changes, log, auditFilter, setAuditFilter, selectedCase, selectCase, now, violations, booted, toasts, dismiss, notify, refresh, act, login, logout }
+  const value: Ctx = { users, me, cases, reqs, changes, log, auditFilter, setAuditFilter, selectedCase, selectCase, now, violations, booted, toasts, dismiss, notify, refresh, act, login, signInAs, logout }
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>
 }

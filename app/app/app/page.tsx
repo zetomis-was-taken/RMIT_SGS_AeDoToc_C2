@@ -1,5 +1,5 @@
 'use client'
-import { ArrowRight, Check, X } from 'lucide-react'
+import { ArrowRight, Check, ShieldAlert, Sparkles, X } from 'lucide-react'
 import Link from 'next/link'
 import { useApp } from '@/components/app-context'
 import { Button } from '@/components/ui/button'
@@ -31,34 +31,75 @@ export default function Overview() {
   if (role === 'supervisor' || role === 'citizen') {
     for (const r of pendingReqs) {
       if (r.votes.some((v: any) => v.voter === me.id)) continue
-      todo.push({ key: `r${r.id}`, text: `${r.requester} asks to ${r.kind === 'full_view' ? 'open the record of' : 'check eligibility for'} ${r.case_id}`, sub: r.purpose,
-        actions: <>
-          <Button size="sm" variant="inverse" onClick={() => act('vote-access', { id: r.id, decision: 'approve' }, { title: 'Vote recorded', message: `You approved request #${r.id}` })}><Check />Approve</Button>
-          <Button size="sm" variant="destructive" className="border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white" onClick={() => act('vote-access', { id: r.id, decision: 'deny' }, { title: 'Request denied', message: `You denied request #${r.id}` })}><X />Deny</Button>
-        </> })
+      todo.push({
+        key: `r${r.id}`,
+        text: `${r.requester} asks to ${r.kind === 'full_view' ? 'open the record of' : 'check eligibility for'} ${r.case_id}`,
+        sub: r.purpose,
+        actions: (
+          <div className="flex gap-2">
+            <Button size="sm" variant="default" onClick={() => act('vote-access', { id: r.id, decision: 'approve' }, { title: 'Vote recorded', message: `You approved request #${r.id}` })}><Check />Approve</Button>
+            <Button size="sm" variant="destructive" onClick={() => act('vote-access', { id: r.id, decision: 'deny' }, { title: 'Request denied', message: `You denied request #${r.id}` })}><X />Deny</Button>
+          </div>
+        )
+      })
     }
   }
   if (role === 'supervisor') {
     for (const c of pendingChanges) {
       if (c.votes.some((v: any) => v.voter === me.id)) continue
-      todo.push({ key: `c${c.id}`, text: `${c.requester} proposes: ${describeChange(c)}`, sub: `Policy change #${c.id} · needs ${c.quorum} supervisors`,
-        actions: <>
-          <Button size="sm" variant="inverse" onClick={() => act('vote-change', { id: c.id, decision: 'approve' }, { title: 'Vote recorded', message: `You approved change #${c.id}` })}><Check />Approve</Button>
-          <Button size="sm" variant="destructive" className="border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white" onClick={() => act('vote-change', { id: c.id, decision: 'deny' }, { title: 'Change rejected', message: `You rejected change #${c.id}` })}><X />Reject</Button>
-        </> })
+      todo.push({
+        key: `c${c.id}`,
+        text: `${c.requester} proposes: ${describeChange(c)}`,
+        sub: `Policy change #${c.id} · needs ${c.quorum} supervisors`,
+        actions: (
+          <div className="flex gap-2">
+            <Button size="sm" variant="default" onClick={() => act('vote-change', { id: c.id, decision: 'approve' }, { title: 'Vote recorded', message: `You approved change #${c.id}` })}><Check />Approve</Button>
+            <Button size="sm" variant="destructive" onClick={() => act('vote-change', { id: c.id, decision: 'deny' }, { title: 'Change rejected', message: `You rejected change #${c.id}` })}><X />Reject</Button>
+          </div>
+        )
+      })
     }
   }
   if (role === 'officer' || role === 'agency_b') {
-    for (const g of grants) todo.push({ key: `g${g.caseId}${g.kind}`, text: `${g.caseId} is unlocked for you`, sub: `${g.kind === 'full_view' ? 'Full view' : 'Eligibility result'} · closes in ${timeLeft(g.expires_at - now)}`,
-      actions: <Link href={`/app/cases/${g.caseId}`} className="inline-flex items-center gap-1.5 rounded-[4px] bg-white px-3 py-1.5 text-[13px] font-semibold text-graphite hover:shadow-lift">Open <ArrowRight className="size-4" /></Link> })
-    for (const r of pendingReqs) todo.push({ key: `w${r.id}`, text: `Waiting on approvals for ${r.case_id}`, sub: `Request #${r.id} · supervisor and citizen must both approve`, actions: <Status s="pending" /> })
+    for (const g of grants) {
+      todo.push({
+        key: `g${g.caseId}${g.kind}`,
+        text: `${g.caseId} is unlocked for you`,
+        sub: `${g.kind === 'full_view' ? 'Full view' : 'Eligibility result'} · closes in ${timeLeft(g.expires_at - now)}`,
+        actions: (
+          <Link href={`/app/cases/${g.caseId}`} className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/40 bg-gradient-to-r from-[#2727e6] to-[#3b5bf5] px-4 py-1.5 text-[13px] font-semibold text-white shadow-[0_0_15px_rgba(39,39,230,0.4)] hover:shadow-[0_0_25px_rgba(39,39,230,0.6)]">
+            Open <ArrowRight className="size-3.5" />
+          </Link>
+        )
+      })
+    }
+    for (const r of pendingReqs) {
+      todo.push({
+        key: `w${r.id}`,
+        text: `Waiting on approvals for ${r.case_id}`,
+        sub: `Request #${r.id} · supervisor and citizen must both approve`,
+        actions: <Status s="pending" />
+      })
+    }
   }
   if (role === 'admin') {
-    for (const c of pendingChanges) todo.push({ key: `a${c.id}`, text: `Your change #${c.id} is blocked until ${c.quorum} supervisors approve`, sub: describeChange(c), actions: <Status s="pending" /> })
+    for (const c of pendingChanges) {
+      todo.push({
+        key: `a${c.id}`,
+        text: `Your change #${c.id} is blocked until ${c.quorum} supervisors approve`,
+        sub: describeChange(c),
+        actions: <Status s="pending" />
+      })
+    }
   }
 
   const by = (k: string) => log.filter(l => l.decision === k).length
-  const bars: [string, number][] = [['Allowed', by('ALLOW')], ['Denied', by('DENY')], ['Pending', by('PENDING')], ['Info', by('INFO')]]
+  const bars: [string, number, string][] = [
+    ['Allowed', by('ALLOW'), 'from-blue-600 to-[#3b5bf5]'],
+    ['Denied', by('DENY'), 'from-rose-600 to-rose-400'],
+    ['Pending', by('PENDING'), 'from-amber-600 to-amber-400'],
+    ['Info', by('INFO'), 'from-cyan-600 to-cyan-400']
+  ]
   const max = Math.max(1, ...bars.map(b => b[1]))
   const reqBy = (k: string) => reqs.filter(r => r.status === k).length
   const feed = log.filter(l => l.action !== 'login').slice(0, 8)
@@ -66,67 +107,112 @@ export default function Overview() {
   return (
     <>
       <PageTitle title={`${hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'}, ${me.name.split(' ')[0]}.`}>
-        {ROLE_LABEL[role]}. {ROLE_BLURB[role]}
+        <span className="font-semibold text-gray-900">{ROLE_LABEL[role]}</span> — {ROLE_BLURB[role]}
       </PageTitle>
 
-      <div className="grid items-start gap-4 xl:grid-cols-[1.6fr_1fr]">
-        <Panel dark title="Needs your action" action={<span className="num text-[13px] text-white/60">{todo.length} open</span>}>
-          {todo.length === 0 ? <div className="px-5 py-14 text-center text-[14px] text-white/60">Nothing is waiting on you.</div> : todo.map(t => (
-            <div key={t.key} className="flex flex-wrap items-center gap-3 border-b border-white/10 px-5 py-4 last:border-b-0">
-              <div className="min-w-[220px] flex-1">
-                <div className="text-[15px] font-semibold tracking-[-0.01em]">{t.text}</div>
-                <div className="text-[13px] text-white/60">{t.sub}</div>
-              </div>
-              <div className="flex gap-2">{t.actions}</div>
+      <div className="grid items-start gap-5 xl:grid-cols-[1.6fr_1fr]">
+        <Panel title="Needs your action" action={<span className="num text-[12px] font-bold text-blue-700 rounded-full bg-blue-50 border border-blue-200 px-3 py-0.5">{todo.length} open</span>}>
+          {todo.length === 0 ? (
+            <div className="px-6 py-16 text-center text-[14px] text-gray-500">
+              <Sparkles className="size-6 text-[#2727e6] mx-auto mb-2 opacity-60" />
+              Nothing is waiting on you. All quorum approvals are settled.
             </div>
-          ))}
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {todo.map(t => (
+                <div key={t.key} className="flex flex-wrap items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-gray-50">
+                  <div className="min-w-[240px] flex-1">
+                    <div className="text-[15px] font-semibold tracking-tight text-gray-900">{t.text}</div>
+                    <div className="text-[13px] text-gray-500 mt-0.5">{t.sub}</div>
+                  </div>
+                  <div>{t.actions}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </Panel>
 
-        <div className="grid grid-cols-2 gap-4">
-          {([['Cases', cases.length, 'in the index'], ['Pending consent', pendingReqs.length, 'requests'], ['Open grants', grants.length, 'for you, 15 min'], ['Denied', denied, 'in your log']] as const).map(([l, n, h]) => (
-            <div key={l} className="rounded-[8px] bg-white p-4">
-              <div className="text-[12px] font-semibold text-ash">{l}</div>
-              <div className="num text-[44px] leading-none font-bold tracking-[-0.05em]">{n}</div>
-              <div className="mt-1 text-[12px] text-ash">{h}</div>
+        <div className="grid grid-cols-2 gap-3.5">
+          {([
+            ['Cases in index', cases.length, 'Total registered records', 'border-blue-200'],
+            ['Pending consent', pendingReqs.length, 'Awaiting quorum vote', 'border-amber-200'],
+            ['Active grants', grants.length, '15-min session active', 'border-emerald-200'],
+            ['Denied attempts', denied, 'Logged in audit chain', 'border-rose-200']
+          ] as const).map(([l, n, h, borderCol]) => (
+            <div
+              key={l}
+              className={`group relative overflow-hidden rounded-2xl border ${borderCol} bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-md`}
+            >
+              <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{l}</div>
+              <div className="num text-[42px] leading-none font-bold tracking-tight text-gray-900 mt-2 group-hover:text-[#2727e6] transition-colors">{n}</div>
+              <div className="mt-2 text-[12px] text-gray-500">{h}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mt-4 grid items-start gap-4 lg:grid-cols-2">
+      <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
         <Panel title="Decisions in your log">
-          <div className="flex flex-col gap-3 p-5">
-            {bars.map(([l, n]) => (
-              <div key={l} className="grid grid-cols-[72px_1fr_32px] items-center gap-3 text-[13px]">
-                <span className="font-semibold">{l}</span>
-                <div className="h-3 rounded-[2px] bg-canvas"><div className={`h-full rounded-[2px] transition-[width] duration-500 ${l === 'Denied' ? 'bg-black' : l === 'Allowed' ? 'bg-graphite' : 'bg-[#9a9a9a]'}`} style={{ width: `${(n / max) * 100}%` }} /></div>
-                <span className="num text-right">{n}</span>
+          <div className="flex flex-col gap-4 p-6">
+            {bars.map(([l, n, grad]) => (
+              <div key={l} className="grid grid-cols-[80px_1fr_36px] items-center gap-3 text-[13px]">
+                <span className="font-semibold text-gray-700">{l}</span>
+                <div className="h-3 rounded-full bg-gray-100 overflow-hidden p-0.5 border border-gray-200">
+                  <div
+                    className={`h-full rounded-full bg-gradient-to-r ${grad} transition-[width] duration-500`}
+                    style={{ width: `${Math.max(4, (n / max) * 100)}%` }}
+                  />
+                </div>
+                <span className="num text-right font-bold text-gray-900">{n}</span>
               </div>
             ))}
             {role !== 'admin' && (
-              <div className="mt-2 border-t border-rule pt-4">
-                <div className="mb-2 text-[12px] font-semibold text-ash">Consent requests by outcome</div>
-                <div className="flex h-8 overflow-hidden rounded-[4px] bg-canvas text-[12px] font-semibold text-white">
-                  {([['granted', 'bg-graphite'], ['pending', 'bg-[#9a9a9a]'], ['denied', 'bg-black']] as const).map(([k, c]) => reqBy(k) > 0 && <div key={k} className={`${c} flex items-center justify-center`} style={{ flex: reqBy(k) }}>{k} {reqBy(k)}</div>)}
-                  {reqs.length === 0 && <div className="flex flex-1 items-center justify-center text-ash">no requests yet</div>}
+              <div className="mt-2 border-t border-gray-100 pt-5">
+                <div className="mb-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Consent requests by outcome</div>
+                <div className="flex h-9 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 text-[12px] font-semibold text-white">
+                  {([['granted', 'bg-emerald-600/70'], ['pending', 'bg-blue-600/70'], ['denied', 'bg-rose-600/70']] as const).map(([k, c]) => reqBy(k) > 0 && (
+                    <div key={k} className={`${c} flex items-center justify-center tracking-wide`} style={{ flex: reqBy(k) }}>
+                      {k} ({reqBy(k)})
+                    </div>
+                  ))}
+                  {reqs.length === 0 && <div className="flex flex-1 items-center justify-center text-gray-400 text-xs">No requests yet</div>}
                 </div>
               </div>
             )}
           </div>
         </Panel>
 
-        <Panel title="Recent activity" action={<Link href="/app/audit" className="t-nav inline-flex items-center gap-1 underline underline-offset-4">All <ArrowRight className="size-3.5" /></Link>}>
-          {feed.length === 0 ? <Empty>No activity yet. Try opening a case.</Empty> : (
-            <ol className="p-5">
-              {feed.map((l, i) => (
-                <li key={l.id} className="relative flex gap-3 pb-4 last:pb-0">
-                  {i < feed.length - 1 && <span className="absolute top-4 bottom-0 left-[5px] w-px bg-rule" aria-hidden />}
-                  <span className={`relative mt-1.5 size-[11px] shrink-0 rounded-full border-2 border-ink ${l.decision === 'DENY' ? 'bg-black' : l.decision === 'ALLOW' ? 'bg-white' : 'bg-canvas'}`} />
+        <Panel
+          title="Recent activity"
+          action={
+            <Link href="/app/audit" className="t-nav inline-flex items-center gap-1.5 text-xs text-[#2727e6] hover:text-[#1a1db8] transition-colors">
+              Full log <ArrowRight className="size-3.5" />
+            </Link>
+          }
+        >
+          {feed.length === 0 ? (
+            <Empty>No activity yet. Try opening a case.</Empty>
+          ) : (
+            <ol className="p-6 divide-y divide-gray-100">
+              {feed.map((l) => (
+                <li key={l.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                  <span className={`size-2.5 shrink-0 rounded-full ${
+                    l.decision === 'DENY' 
+                      ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]' 
+                      : l.decision === 'ALLOW' 
+                      ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' 
+                      : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]'
+                  }`} />
                   <div className="min-w-0 flex-1 text-[13px]">
-                    <div className="truncate"><b>{l.actor}</b> · {l.action.replaceAll('_', ' ')} <span className="mono">{l.target !== '-' ? l.target : ''}</span></div>
-                    <div className="truncate text-ash">{l.detail || '—'}</div>
+                    <div className="truncate text-gray-900 font-medium">
+                      <b className="text-gray-900">{l.actor}</b> · {l.action.replaceAll('_', ' ')} <span className="mono text-[#2727e6] font-mono text-xs">{l.target !== '-' ? l.target : ''}</span>
+                    </div>
+                    <div className="truncate text-gray-500 text-xs">{l.detail || '—'}</div>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1"><Status s={l.decision} /><span className="text-[11px] text-ash">{ago(l.at)}</span></div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <Status s={l.decision} />
+                    <span className="text-[11px] text-gray-500">{ago(l.at)}</span>
+                  </div>
                 </li>
               ))}
             </ol>
@@ -134,16 +220,50 @@ export default function Overview() {
         </Panel>
       </div>
 
-      <Panel className="mt-4" title="Who can see what" action={<span className="hidden text-[12px] text-ash sm:inline">Enforced on the server. Your row is outlined.</span>}>
+      <Panel className="mt-5" title="Access Matrix — Who can see what" action={<span className="hidden text-[12px] text-gray-500 sm:inline">Cryptographically enforced on the server.</span>}>
         <Table>
-          <TableHeader><TableRow>{['Role', 'Name', 'Income', 'National ID', 'Health'].map(h => <TableHead key={h} className="text-ash">{h}</TableHead>)}</TableRow></TableHeader>
+          <TableHeader>
+            <TableRow>
+              {['Role', 'Full Name', 'Monthly Income', 'National ID', 'Medical & Health'].map(h => (
+                <TableHead key={h}>{h}</TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
           <TableBody>
-            {MATRIX.map(([r, ...cells]) => (
-              <TableRow key={r} className={r === role ? 'outline-2 -outline-offset-2 outline-ink' : ''}>
-                <TableCell className="font-semibold">{MATRIX_LABEL[r]}{r === role && <span className="ml-2 text-[11px] font-bold text-ash">YOU</span>}</TableCell>
-                {cells.map((c, i) => <TableCell key={i} className={c === 'No access' ? 'text-ash' : c === 'Ciphertext' ? 'font-mono text-[12px]' : 'font-semibold'}>{c}</TableCell>)}
-              </TableRow>
-            ))}
+            {MATRIX.map(([r, ...cells]) => {
+              const isCurrentRole = r === role
+              return (
+                <TableRow
+                  key={r}
+                  className={isCurrentRole ? 'bg-blue-50 border-blue-200 hover:bg-blue-100/70' : ''}
+                >
+                  <TableCell className="font-semibold text-gray-900">
+                    <span className="flex items-center gap-2">
+                      {MATRIX_LABEL[r]}
+                      {isCurrentRole && (
+                        <span className="rounded-full bg-blue-100 border border-blue-300 px-2 py-0.5 text-[10px] font-bold tracking-wider text-blue-700 uppercase">
+                          YOU
+                        </span>
+                      )}
+                    </span>
+                  </TableCell>
+                  {cells.map((c, i) => (
+                    <TableCell
+                      key={i}
+                      className={
+                        c === 'No access'
+                          ? 'text-gray-400'
+                          : c === 'Ciphertext'
+                          ? 'font-mono text-xs text-[#2727e6] bg-blue-50 rounded'
+                          : 'font-semibold text-gray-700'
+                      }
+                    >
+                      {c}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </Panel>

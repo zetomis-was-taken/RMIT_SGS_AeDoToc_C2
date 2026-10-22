@@ -1,8 +1,15 @@
 export type U = { id: string; name: string; role: string; citizenId?: string }
 export type R = Record<string, any>
 
+import { authedFetch } from './tide-client'
+
 export const api = async (action: string, body?: R) => {
-  const r = await fetch(`/api/guard/${action}`, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined)
+  const r = await authedFetch(`guard/${action}`, body)
+  const j = await r.json().catch(() => ({}))
+  return { ok: r.ok, status: r.status, data: j }
+}
+export const tideApi = async (action: string, body?: R) => {
+  const r = await authedFetch(`tide/${action}`, body)
   const j = await r.json().catch(() => ({}))
   return { ok: r.ok, status: r.status, data: j }
 }
@@ -28,6 +35,17 @@ export const CODE_TITLE: Record<string, string> = {
   NOT_FOUND: 'Not found',
   FORBIDDEN: 'Forbidden',
   CIPHERTEXT_ONLY: 'Ciphertext only',
+  ROLE_MISSING: 'Role missing',
+  FOUR_EYES: 'Four-eyes rule',
+  CONTRACT_REFUSED: 'ORK contract refused',
+  THRESHOLD_FAILURE: 'Not enough ORKs',
+  THRESHOLD_NOT_MET: 'Threshold not met',
+  NOT_CONFIGURABLE: 'Not configurable',
+  TOKEN_SIGNATURE_INVALID: 'Token signature invalid',
+  DPOP_KEY_MISMATCH: 'Token bound to another key',
+  DPOP_REPLAY: 'Proof replayed',
+  TOKEN_MISSING: 'Not signed in',
+  TOKEN_EXPIRED: 'Session expired',
 }
 export const money = (n: number) => n.toLocaleString('en-US') + ' VND'
 export const timeLeft = (ms: number) => {

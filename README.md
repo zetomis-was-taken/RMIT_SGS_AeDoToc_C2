@@ -20,50 +20,38 @@
 
 ## Setup instructions
 
-Requirements: Docker, Node.js 20.9+ (tested on 24), npm.
-
-### 1. Run TideCloak (port 8080)
-
-```bash
-docker run --name mytidecloak -d \
-  -v "$HOME/tidecloak-data:/opt/keycloak/data/h2" \
-  -p 8080:8080 \
-  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
-  -e KC_BOOTSTRAP_ADMIN_PASSWORD=password \
-  tideorg/tidecloak-dev:latest
-```
-
-Keep it on port 8080: the Tide enrolment flow signs URLs for that origin.
-
-### 2. Provision the realm and enrol the first admin
+Requirements: Node.js 20.9+ (tested on 24, which provides `node:sqlite`) and npm. No Docker and no TideCloak server are needed.
 
 ```bash
 cd app
 npm install
-SUBSCRIPTION_EMAIL=you@example.com bash init/tcinit.sh
+npm run dev        # http://localhost:3000
 ```
 
-The script creates the realm and client, activates the free licence, and prints an enrolment link. Open it in a normal browser window (third-party cookies allowed), complete the Tide enrolment, and the script finishes by writing `app/tidecloak.json`.
-
-### 3. Configure secrets and start the app
-
-```bash
-cp .env.example .env.local   # then set DEMO_MASTER_KEY=$(openssl rand -hex 32) and SESSION_SECRET=$(openssl rand -hex 24)
-npm run dev                  # http://localhost:3000
-```
-
-The demo runs with built-in demo identities, so it works before TideCloak login is connected.
+**TideCloak is simulated** (the organisers allowed this while the Tide fabric was overloaded). On first run the app generates a simulated realm in
+`app/data/tide-sim/`: a realm key and an encryption key, each split into three shares held by three simulated ORKs, plus `tidecloak.sim.json`
+shaped like a real adapter file. Sign-in, DPoP-bound tokens, roles, signed relationship policies, IGA change-request quorum and field encryption
+all go through that layer. [docs/TIDE_PLAN.md](docs/TIDE_PLAN.md) maps every feature to the real Tide capability, says what is and is not
+simulated, and lists the swap-in points for the real `@tidecloak/nextjs` SDK.
 
 - `/` is the landing page (the vault at the top is interactive: switch on the three approvals).
-- `/app` is the operations console. Pick a person, and the menu, data and actions change with their role.
-- `/app/demo` is the guided demo: three attacks that fail, the legitimate flow with the citizen's approval, then the audit proof (about two minutes, repeatable; **Reset & start over** restores the starting state).
-- `/app/lab` runs seven scenarios on the live policy engine as the attacker, each beside what an ordinary role-based backend would do.
+- `/app` is the operations console. Pick a person, sign in (demo password `demo`), and the menu, data and actions follow the token's roles.
+- `/app/demo` is the guided demo: three attacks that fail, the legitimate flow with the citizen's approval, then the audit proof.
+- `/app/lab` runs ten scenarios on the live policy engine, including forged tokens, an ORK outage and the quorum.
+- `/app/tide` shows your decoded token, the verification steps, buttons that try to cheat the server, the ORK network and the signed policies.
 
-### 4. Database attack, from a terminal
+Reset the data at any time with **Reset demo data** in the Security lab.
+
+### Database attack, from a terminal
 
 ```bash
 node scripts/dba-read.mjs     # reads data/citizen.db directly: ciphertext only
 ```
+
+### Using a real TideCloak later
+
+`app/init/tcinit.sh` provisions a real realm (Docker image `tideorg/tidecloak-dev`, port 8080) and enrols the first admin; the original
+scaffold is kept in `app/app/home`, `app/app/protected` and `app/proxy.ts`. Follow the swap-in table in `docs/TIDE_PLAN.md`.
 
 ## Demo video
 
