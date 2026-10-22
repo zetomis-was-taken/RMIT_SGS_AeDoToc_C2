@@ -19,6 +19,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ action: str
   try {
     db()
     if (action === 'users') return NextResponse.json(USERS)
+    // Demo of attack #3: what a DBA with raw database access sees. No auth on purpose: this is the storage layer.
+    if (action === 'dba') return NextResponse.json(db().prepare('SELECT * FROM citizens').all())
     const u = await currentUser()
     if (action === 'me') return NextResponse.json(u)
     if (!u) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
