@@ -42,3 +42,12 @@ export const ago = (t: number) => {
 }
 export const describeChange = (c: R) =>
   c.change === 'assign' ? `Assign ${c.payload.userId} to ${c.payload.caseId}` : `Set approvals required to ${c.payload.value}`
+
+export const ROLE_SHORT: Record<string, string> = { officer: 'Officer', supervisor: 'Supervisor', admin: 'Admin', citizen: 'Citizen', agency_b: 'Agency B' }
+export const ROLE_CAN: Record<string, string[]> = {
+  officer: ['Request access to cases assigned to them', 'Open a record once supervisor and citizen approve'],
+  supervisor: ['Approve or deny consent requests', 'Co-approve policy changes (2 needed)'],
+  admin: ['Propose policy changes', 'Cannot approve them, cannot read records'],
+  citizen: ['Approve or deny access to their own record', 'Read their own record at any time'],
+  agency_b: ['Ask a single yes/no question per case', 'Never receives the file'],
+}

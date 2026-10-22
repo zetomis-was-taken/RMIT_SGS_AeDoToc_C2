@@ -28,8 +28,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ action: str
     switch (action) {
       case 'cases': return NextResponse.json(listCases(u))
       case 'requests': return NextResponse.json(listRequests(u))
-      case 'changes': return NextResponse.json(listChanges())
-      case 'audit': return NextResponse.json(listAudit(300))
+      case 'changes': return NextResponse.json(listChanges(u))
+      case 'audit': return NextResponse.json(listAudit(u, 300))
       case 'verify': return NextResponse.json(verifyChain())
       case 'scenarios': return NextResponse.json(SCENARIOS)
       case 'record': return NextResponse.json(readRecord(u, q.get('caseId') ?? ''))

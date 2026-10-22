@@ -1,33 +1,40 @@
 @import "tailwindcss";
 
-/* Design system: SuperHi Basic Income (see DESIGN.md). Two colours only, flat, no shadows. */
+/* Design system: DESIGN_2.md (Studio.Design). Achromatic chrome; colour only ever comes from the "artwork" (3D keys, screenshots). */
 :root {
-  --color-electric-iris: #2727e6;
-  --color-paper-white: #ffffff;
-  --background: #ffffff;
-  --foreground: #12123a;
+  --canvas: #eeeeee;
+  --paper: #ffffff;
+  --ink: #222222;
+  --graphite: #333333;
+  --ash: #555555;
+  --black: #000000;
+  --rule: #d6d6d6;
+  --shadow-md: rgba(0, 0, 0, 0.1) 0px 2px 15px 0px;
+
+  --background: #eeeeee;
+  --foreground: #222222;
   --card: #ffffff;
-  --card-foreground: #12123a;
+  --card-foreground: #222222;
   --popover: #ffffff;
-  --popover-foreground: #12123a;
-  --primary: #2727e6;
+  --popover-foreground: #222222;
+  --primary: #222222;
   --primary-foreground: #ffffff;
   --secondary: #ffffff;
-  --secondary-foreground: #2727e6;
-  --muted: #ffffff;
-  --muted-foreground: #2727e6;
-  --accent: #ffffff;
-  --accent-foreground: #2727e6;
-  --destructive: #2727e6;
-  --border: #2727e6;
-  --input: #2727e6;
-  --ring: #2727e6;
-  --radius: 0px;
+  --secondary-foreground: #222222;
+  --muted: #eeeeee;
+  --muted-foreground: #555555;
+  --accent: #eeeeee;
+  --accent-foreground: #222222;
+  --destructive: #000000;
+  --border: #d6d6d6;
+  --input: #d6d6d6;
+  --ring: #222222;
+  --radius: 8px;
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), Arial, "Helvetica Neue", sans-serif;
+  --font-tight: var(--font-inter-tight), var(--font-inter), Arial, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -46,40 +53,45 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-iris: #2727e6;
-  --color-ink: #12123a;
-  --color-iris-50: #f5f5ff;
-  --color-iris-100: #e8e8fc;
-  --color-line: #dcdcf4;
-  --color-soft: #55558a;
-  --color-danger: #c4321d;
-  --color-danger-bg: #fdf1ee;
-  --color-ok: #0a7552;
-  --color-ok-bg: #e8f5ef;
-  --color-warn: #8a5600;
-  --color-warn-bg: #fff5de;
-  --radius-btn: 16px;
-  --radius-pill: 50px;
+  --color-canvas: #eeeeee;
+  --color-paper: #ffffff;
+  --color-ink: #222222;
+  --color-graphite: #333333;
+  --color-ash: #555555;
+  --color-rule: #d6d6d6;
+  --shadow-lift: rgba(0, 0, 0, 0.1) 0px 2px 15px 0px;
 }
 
 @layer base {
-  * { border-color: var(--color-line); }
-  html { background: #fff; scrollbar-color: #2727e6 #f5f5ff; }
-  body { margin: 0; background: #fff; color: #12123a; font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  h1, h2, h3 { font-weight: 400; margin: 0; }
-  ::selection { background: #2727e6; color: #fff; }
-  :focus-visible { outline: 2px solid #2727e6; outline-offset: 2px; }
+  * { border-color: var(--rule); }
+  html { background: #eee; scroll-behavior: smooth; scroll-padding-top: 72px; scrollbar-color: #222 #eee; }
+  body { margin: 0; background: #eee; color: #222; font-family: var(--font-inter), Arial, "Helvetica Neue", sans-serif; font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; }
+  button, a, select, summary { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  p { text-wrap: pretty; }
+  ::selection { background: #222; color: #fff; }
+  :focus-visible { outline: 2px solid #222; outline-offset: 2px; }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb { background: #c9c9f2; border: 2px solid #fff; }
-  ::-webkit-scrollbar-thumb:hover { background: #2727e6; }
+  ::-webkit-scrollbar-thumb { background: #b8b8b8; border: 2px solid #eee; border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: #222; }
 }
 
-.ddc { font-family: var(--font-display), ui-serif, Georgia, serif; font-weight: 400; line-height: 1.05; letter-spacing: -0.01em; }
+/* type scale from DESIGN_2: display steps run at -0.04em */
+.t-hero { font-size: clamp(44px, 8.2vw, 112px); line-height: 0.96; font-weight: 600; letter-spacing: -0.04em; }
+.t-section { font-size: clamp(34px, 5vw, 64px); line-height: 1.04; font-weight: 700; letter-spacing: -0.04em; }
+.t-title { font-size: clamp(30px, 3.4vw, 44px); line-height: 1.06; font-weight: 700; letter-spacing: -0.04em; }
+.t-sub { font-size: 19px; line-height: 1.4; letter-spacing: -0.01em; }
+.t-nav { font-family: var(--font-tight), var(--font-inter), sans-serif; font-size: 15px; font-weight: 500; line-height: 1.4; }
+.t-legal { font-size: 11px; line-height: 1.66; letter-spacing: -0.11px; }
 .num { font-variant-numeric: tabular-nums; }
 .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
 
-@keyframes toast-in { from { transform: translateY(-8px); opacity: 0 } to { transform: none; opacity: 1 } }
-@keyframes flash-danger { 0% { background: #fbd9d2 } 100% { background: transparent } }
-.toast-in { animation: toast-in 260ms cubic-bezier(0.16, 1, 0.3, 1); }
-.flash-danger { animation: flash-danger 1400ms ease-out; }
-@media (prefers-reduced-motion: reduce) { .toast-in, .flash-danger { animation: none; } }
+/* hatched fill: the achromatic way to say "blocked" without a warning colour */
+.hatch { background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba(0,0,0,0.08) 6px 7px); }
+.hatch-dark { background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255,255,255,0.10) 6px 7px); }
+
+@keyframes toast-in { from { transform: translateY(-10px) scale(.98); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes slam { 0% { transform: scale(1.04); } 100% { transform: none; } }
+.toast-in { animation: toast-in 280ms cubic-bezier(0.16, 1, 0.3, 1); }
+.slam { animation: slam 320ms cubic-bezier(0.16, 1, 0.3, 1); }
+@media (prefers-reduced-motion: reduce) { .toast-in, .slam { animation: none; } html { scroll-behavior: auto; } }

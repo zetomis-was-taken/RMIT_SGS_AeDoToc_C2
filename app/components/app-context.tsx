@@ -2,12 +2,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, type R, type U } from '@/lib/client'
 
-export type View = 'overview' | 'cases' | 'requests' | 'policy' | 'audit' | 'lab'
 export interface Toast { id: number; kind: 'violation' | 'success' | 'info'; title: string; message: string; code?: string }
 
 interface Ctx {
   users: U[]; me: U | null; cases: R[]; reqs: R[]; changes: R[]; log: R[]
-  view: View; setView: (v: View) => void
   auditFilter: string; setAuditFilter: (f: string) => void
   selectedCase: string | null; selectCase: (id: string | null) => void
   now: number; violations: number; booted: boolean
@@ -30,7 +28,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [reqs, setReqs] = useState<R[]>([])
   const [changes, setChanges] = useState<R[]>([])
   const [log, setLog] = useState<R[]>([])
-  const [view, setView] = useState<View>('overview')
   const [auditFilter, setAuditFilter] = useState('all')
   const [selectedCase, selectCase] = useState<string | null>(null)
   const [toasts, setToasts] = useState<Toast[]>([])
@@ -52,13 +49,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const m = (await api('me')).data
     setMe(m?.id ? m : null)
     if (m?.id) {
-      const [c, r, ch, a] = await Promise.all([api('cases'), api('requests'), api('changes'), api('audit')])
-      // a failed request answers with an error object, not a list — keep the last good data rather than storing it
-      if (Array.isArray(c.data)) setCases(c.data)
-      if (Array.isArray(r.data)) setReqs(r.data)
-      if (Array.isArray(ch.data)) setChanges(ch.data)
-      if (Array.isArray(a.data)) setLog(a.data)
-    }
+      // fetch only what this role may see; the server would refuse the rest anyway
+      const role = m.role as string
+      const [c, r, ch, a] = await Promise.all([
+        api('cases'),
+        role === 'admin' ? null : api('requests'),
+        role === 'admin' || role === 'supervisor' ? api('changes') : null,
+        api('audit'),
+      ])
+      setCases(c.ok ? c.data : []); setReqs(r?.ok ? r.data : []); setChanges(ch?.ok ? ch.data : []); setLog(a.ok ? a.data : [])
+    } else { setCases([]); setReqs([]); setChanges([]); setLog([]) }
     setBooted(true)
   }, [])
 
@@ -77,12 +77,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (id: string) => {
     await api('login', { userId: id })
-    selectCase(null); setView('overview')
+    selectCase(null)
     await refresh()
   }, [refresh])
   const logout = useCallback(async () => { await api('logout', {}); setMe(null); setLog([]); selectCase(null) }, [])
 
   const violations = useMemo(() => Math.max(sessionViolations, 0), [sessionViolations])
-  const value: Ctx = { users, me, cases, reqs, changes, log, view, setView, auditFilter, setAuditFilter, selectedCase, selectCase, now, violations, booted, toasts, dismiss, notify, refresh, act, login, logout }
+  const value: Ctx = { users, me, cases, reqs, changes, log, auditFilter, setAuditFilter, selectedCase, selectCase, now, violations, booted, toasts, dismiss, notify, refresh, act, login, logout }
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>
 }

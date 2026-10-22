@@ -52,7 +52,12 @@ cp .env.example .env.local   # then set DEMO_MASTER_KEY=$(openssl rand -hex 32) 
 npm run dev                  # http://localhost:3000
 ```
 
-The demo runs with built-in demo identities, so it works before TideCloak login is connected. Open the **Security lab** page and press **Run all scenarios** to see the three attacks fail, or sign in as each person and walk through the consent flow. **Reset demo data** restores the starting state.
+The demo runs with built-in demo identities, so it works before TideCloak login is connected.
+
+- `/` is the landing page (the vault at the top is interactive: switch on the three approvals).
+- `/app` is the operations console. Pick a person, and the menu, data and actions change with their role.
+- `/app/demo` is the guided demo: three attacks that fail, the legitimate flow with the citizen's approval, then the audit proof (about two minutes, repeatable; **Reset & start over** restores the starting state).
+- `/app/lab` runs seven scenarios on the live policy engine as the attacker, each beside what an ordinary role-based backend would do.
 
 ### 4. Database attack, from a terminal
 

@@ -15,7 +15,7 @@ const CODES: [RegExp, string][] = [
   [/own request|you requested/i, 'SELF_APPROVAL_BLOCKED'],
   [/only .*(approve|vote)|only supervisors/i, 'NOT_AN_APPROVER'],
   [/only admins/i, 'ADMIN_ONLY'],
-  [/only (the assigned officer|agency b)|may not read/i, 'ROLE_NOT_ALLOWED'],
+  [/only (the assigned officer|agency b)|may not (read|view)|take no part/i, 'ROLE_NOT_ALLOWED'],
   [/no such/i, 'NOT_FOUND'],
   [/already/i, 'ALREADY_RESOLVED'],
 ]
@@ -112,6 +112,10 @@ export function voteAccess(u: User, requestId: number, decision: 'approve' | 'de
 }
 
 export function listRequests(u: User) {
+  if (u.role === 'admin') {
+    audit(u.id, 'list_requests', '-', 'DENY', 'admins take no part in consent')
+    throw new Denied('Admins take no part in consent decisions, so they cannot list consent requests')
+  }
   const rows = all('SELECT * FROM access_requests ORDER BY id DESC')
   return rows
     .map((r): Row => {
@@ -138,6 +142,18 @@ function activeGrant(u: User, caseId: string, kind: string) {
 export function readRecord(u: User, caseId: string) {
   const c = one('SELECT * FROM cases WHERE id=?', caseId)
   if (!c) throw new Denied('No such case', 404)
+  if (u.role === 'citizen' && u.citizenId === c.citizen_id) {
+    const z = one('SELECT * FROM citizens WHERE id=?', c.citizen_id)!
+    audit(u.id, 'read_own_record', caseId, 'ALLOW', 'owner reads their own record')
+    return {
+      name: decryptField(z.full_name_enc), national_id: decryptField(z.national_id_enc),
+      income: Number(decryptField(z.income_enc)), address: decryptField(z.address_enc),
+    }
+  }
+  if (u.role === 'citizen') {
+    audit(u.id, 'read_record', caseId, 'DENY', 'citizen tried to read another citizen\'s record')
+    throw new Denied('This record belongs to another citizen. You are not assigned to this case')
+  }
   if (u.role !== 'officer') {
     audit(u.id, 'read_record', caseId, 'DENY', `role ${u.role} may not read records`)
     throw new Denied(`Your role (${u.role}) may not read citizen records`)
@@ -219,7 +235,11 @@ export function voteChange(u: User, id: number, decision: 'approve' | 'deny') {
   return 'pending'
 }
 
-export function listChanges() {
+export function listChanges(u: User) {
+  if (u.role !== 'admin' && u.role !== 'supervisor') {
+    audit(u.id, 'list_policy', '-', 'DENY', `role ${u.role} may not view policy changes`)
+    throw new Denied(`Your role (${u.role}) may not view policy changes`)
+  }
   return all('SELECT * FROM policy_changes ORDER BY id DESC').map(c => ({
     ...c,
     payload: JSON.parse(c.payload),
@@ -228,7 +248,11 @@ export function listChanges() {
   }))
 }
 
-export const listAudit = (limit = 100) => all('SELECT * FROM audit ORDER BY id DESC LIMIT ?', limit)
+// supervisors and admins oversee everything; everyone else sees only their own actions
+export const listAudit = (u: User, limit = 100) =>
+  u.role === 'supervisor' || u.role === 'admin'
+    ? all('SELECT * FROM audit ORDER BY id DESC LIMIT ?', limit)
+    : all('SELECT * FROM audit WHERE actor=? ORDER BY id DESC LIMIT ?', u.id, limit)
 
 // Recompute the hash chain: any edited/removed audit row breaks it.
 export function verifyChain() {

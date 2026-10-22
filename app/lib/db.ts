@@ -61,6 +61,11 @@ function seed(d: DatabaseSync) {
     ['cz-hoa', 'Nguyen Thi Hoa', '079190004711', 9_800_000, '12 Le Loi, Q1, TP.HCM', 'Hypertension'],
     ['cz-nam', 'Tran Van Nam', '079185009022', 31_000_000, '88 Hai Ba Trung, Q3, TP.HCM', 'None'],
     ['cz-lien', 'Pham Thi Lien', '079192001533', 14_500_000, '5 Nguyen Hue, Q1, TP.HCM', 'Diabetes'],
+    ['cz-minh', 'Le Quang Minh', '079188003344', 18_200_000, '41 Vo Van Tan, Q3, TP.HCM', 'None'],
+    ['cz-thao', 'Do Thi Thao', '079195007788', 7_400_000, '9 Pasteur, Q1, TP.HCM', 'Asthma'],
+    ['cz-phuc', 'Vu Hoang Phuc', '079191005566', 12_900_000, '120 Cach Mang Thang 8, Q10, TP.HCM', 'None'],
+    ['cz-yen', 'Bui Hai Yen', '079193002211', 26_300_000, '3 Nguyen Dinh Chieu, Q1, TP.HCM', 'None'],
+    ['cz-khoa', 'Dang Anh Khoa', '079189009900', 11_100_000, '77 Ly Thuong Kiet, Q10, TP.HCM', 'Hypertension'],
   ]
   const ic = d.prepare('INSERT INTO citizens VALUES (?,?,?,?,?,?)')
   for (const [id, name, nid, income, addr, health] of people)
@@ -69,10 +74,20 @@ function seed(d: DatabaseSync) {
   cc.run('C-1001', 'cz-hoa', 'housing_subsidy', 'Housing subsidy application #1001', 'open')
   cc.run('C-1002', 'cz-nam', 'housing_subsidy', 'Housing subsidy application #1002', 'open')
   cc.run('C-1003', 'cz-lien', 'housing_subsidy', 'Housing subsidy application #1003', 'open')
+  cc.run('C-1004', 'cz-minh', 'housing_subsidy', 'Housing subsidy application #1004', 'open')
+  cc.run('C-1005', 'cz-thao', 'housing_subsidy', 'Housing subsidy application #1005', 'open')
+  cc.run('C-1006', 'cz-phuc', 'housing_subsidy', 'Housing subsidy application #1006', 'open')
+  cc.run('C-1007', 'cz-yen', 'housing_subsidy', 'Housing subsidy application #1007', 'open')
+  cc.run('C-1008', 'cz-khoa', 'housing_subsidy', 'Housing subsidy application #1008', 'open')
   const ac = d.prepare('INSERT INTO assignments VALUES (?,?)')
   ac.run('C-1001', 'officer_an')
   ac.run('C-1002', 'officer_binh')
   ac.run('C-1003', 'officer_an')
+  ac.run('C-1004', 'officer_binh')
+  ac.run('C-1005', 'officer_an')
+  ac.run('C-1006', 'officer_binh')
+  ac.run('C-1007', 'officer_an')
+  ac.run('C-1008', 'officer_binh')
   d.prepare('INSERT INTO settings VALUES (?,?)').run('policy_quorum', '2')
   d.prepare('INSERT INTO settings VALUES (?,?)').run('income_threshold', '15000000')
 }

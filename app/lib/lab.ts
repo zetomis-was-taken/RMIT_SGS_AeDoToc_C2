@@ -59,6 +59,23 @@ export async function runScenario(id: string): Promise<Scenario> {
         rbac: 'A shared API key returns the whole file to any partner agency.', steps: [a, b],
         verdict: a.outcome === 'blocked' && b.outcome === 'blocked' ? 'protected' : 'exposed' }
     }
+    case 'happy-path': {
+      // the legitimate flow, end to end, as five different people
+      const steps: Step[] = []
+      let rid = 0
+      steps.push(await step('Officer An requests access to C-1001', () => { rid = requestAccess(U('officer_an'), 'C-1001', 'full_view', 'Process housing subsidy'); return `request #${rid} created` }, 'pending'))
+      steps.push(await step('Supervisor Chi approves', () => voteAccess(U('supervisor_chi'), rid, 'approve'), 'pending'))
+      steps.push(await step('Citizen Hoa approves', () => voteAccess(U('cz_hoa'), rid, 'approve')))
+      steps.push(await step('Officer An opens the record', () => { const r = readRecord(U('officer_an'), 'C-1001'); return `${r.name} · income ${r.income.toLocaleString('en-US')} VND` }))
+      let eid = 0
+      steps.push(await step('Agency B asks only: is C-1001 income eligible?', () => { eid = requestAccess(U('agencyb_lan'), 'C-1001', 'eligibility_check', 'Verify income eligibility'); return `request #${eid} created` }, 'pending'))
+      steps.push(await step('Supervisor Chi approves', () => voteAccess(U('supervisor_chi'), eid, 'approve'), 'pending'))
+      steps.push(await step('Citizen Hoa approves', () => voteAccess(U('cz_hoa'), eid, 'approve')))
+      steps.push(await step('Agency B receives the answer', () => `Agency B sees only ${JSON.stringify(eligibility(U('agencyb_lan'), 'C-1001'))}`))
+      const ok = steps.every(x => x.outcome !== 'blocked')
+      return { id, title: 'The legitimate flow', actor: 'Five people', threat: 'None. This is how access is meant to work.',
+        rbac: 'Works too, but nobody except the officer knows the file was opened, and Agency B would get the whole file.', steps, verdict: ok ? 'protected' : 'exposed' }
+    }
     case 'dba': {
       const rows = db().prepare('SELECT id, full_name_enc, income_enc FROM citizens LIMIT 1').all() as Record<string, string>[]
       const r = rows[0]
@@ -71,5 +88,5 @@ export async function runScenario(id: string): Promise<Scenario> {
   throw new Denied('No such scenario', 404)
 }
 
-export const SCENARIOS = ['out-of-scope', 'no-consent', 'self-approve', 'admin-escalation', 'agency-overreach', 'dba']
+export const SCENARIOS = ['out-of-scope', 'no-consent', 'self-approve', 'admin-escalation', 'agency-overreach', 'dba', 'happy-path']
 export const PERSONAS = USERS
