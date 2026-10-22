@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { useApp } from './app-context'
 import { Badge } from './ui/badge'
-import { Button } from './ui/button'
 import { CODE_TITLE, ROLE_LABEL } from '@/lib/client'
 import { canOpen, type PageId } from '@/lib/access'
 

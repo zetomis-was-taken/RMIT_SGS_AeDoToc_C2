@@ -1,5 +1,5 @@
 'use client'
-import { ArrowRight, Check, Play, RotateCcw, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Play, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useApp } from '@/components/app-context'

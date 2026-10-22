@@ -1,8 +1,7 @@
 import { createHash, createPublicKey, randomBytes, verify as nodeVerify } from 'node:crypto'
 import { adapter, signCompact, verifyPassword } from './ork'
-import { CLIENT_ID, ISSUER, dirUser, subjectUuid, tideUserKey, vuid } from './directory'
+import { ISSUER, dirUser, subjectUuid, tideUserKey, vuid } from './directory'
 
-const b64u = (b: Buffer | string) => Buffer.from(b).toString('base64url')
 const dec = (s: string) => JSON.parse(Buffer.from(s, 'base64url').toString('utf8'))
 export const ACCESS_TTL = 600 // seconds, the realm default Tide documents
 

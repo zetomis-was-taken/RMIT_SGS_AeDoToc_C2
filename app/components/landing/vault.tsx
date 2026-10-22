@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
 export type Keys = { officer: boolean; supervisor: boolean; citizen: boolean }
-// The "artwork" supplies the colour (DESIGN_2): one hue per party, nothing else in the UI is coloured.
+// The "artwork" supplies the colour: one hue per party, nothing else in the UI is coloured.
 export const KEY_COLORS = { officer: '#ff4d1c', supervisor: '#2f55ff', citizen: '#b6f03c' } as const
 const ORDER: (keyof Keys)[] = ['officer', 'supervisor', 'citizen']
 const SOCKET_X = [-0.75, 0, 0.75]

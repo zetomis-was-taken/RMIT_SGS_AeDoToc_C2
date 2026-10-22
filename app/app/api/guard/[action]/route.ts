@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticate, USERS } from '@/lib/auth'
-import { AuthError, type Check } from '@/lib/tide-sim/jwt'
+import { AuthError } from '@/lib/tide-sim/jwt'
 import { Denied, verifyChain, eligibility, listAudit, listCases, listChanges, listRequests, proposeChange, readRecord, requestAccess, voteAccess, voteChange } from '@/lib/guard'
 import { audit, db, resetDb } from '@/lib/db'
 import { runScenario, SCENARIOS } from '@/lib/lab'

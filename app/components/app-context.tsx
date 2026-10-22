@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, type R, type U } from '@/lib/client'
-import { clearSession, getSession, signIn } from '@/lib/tide-client'
+import { clearSession, signIn } from '@/lib/tide-client'
 
 export interface Toast { id: number; kind: 'violation' | 'success' | 'info'; title: string; message: string; code?: string; tide?: string }
 

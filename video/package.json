@@ -1,7 +1,7 @@
 {
-  "name": "vtmp",
+  "name": "demo-video",
   "version": "1.0.0",
-  "description": "My Remotion video",
+  "description": "Demo video for Citizen Consent Quorum",
   "repository": {},
   "license": "UNLICENSED",
   "engines": {

@@ -67,4 +67,8 @@ scaffold is kept in `app/app/home`, `app/app/protected` and `app/proxy.ts`. Foll
 
 ## Demo video
 
-[`demo.mp4`](demo.mp4) (1:41, 1080p): the possibility, the trust constraint, three attacks failing, the legitimate consent flow, and what changes. Built with Remotion from real screenshots of the running app (`video/`), narrated with a locally generated VoiceStudio voice. Script: [docs/VIDEO_SCRIPT.md](docs/VIDEO_SCRIPT.md).
+**Watch:** https://github.com/zetomis-was-taken/RMIT_SGS_AeDoToc_C2/blob/main/demo.mp4 (file in this repo: [`demo.mp4`](demo.mp4), 1:41, 1080p)
+
+The possibility, the trust constraint, three attacks failing, the legitimate consent flow, and what changes. Built with Remotion from real screenshots of the running app, narrated with a locally generated VoiceStudio voice. Script: [docs/VIDEO_SCRIPT.md](docs/VIDEO_SCRIPT.md).
+
+Re-render it from `video/`: `npm install && npx remotion render Demo ../demo.mp4`.

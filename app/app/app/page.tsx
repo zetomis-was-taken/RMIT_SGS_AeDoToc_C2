@@ -1,5 +1,5 @@
 'use client'
-import { ArrowRight, Check, ShieldAlert, Sparkles, X } from 'lucide-react'
+import { ArrowRight, Check, Sparkles, X } from 'lucide-react'
 import Link from 'next/link'
 import { useApp } from '@/components/app-context'
 import { Button } from '@/components/ui/button'
