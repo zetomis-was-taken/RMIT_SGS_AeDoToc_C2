@@ -1,3 +1,13 @@
+venv/
+.obsidian/
+hackathon_prep/
+challenge/
+*.pdf
+*.html
+node_modules/
+.next/
+*.log
+
 # Local secrets and environment overrides
 .env
 .env.local
@@ -5,7 +15,8 @@
 # TideCloak state if a bind mount is used instead of the named volume
 .tidecloak/
 
-# Application artefacts
-node_modules/
-.next/
-*.log
+app/data/*.db*
+tsconfig.tsbuildinfo
+
+# simulated Tide realm: keys and ORK shares are generated on first run
+app/data/tide-sim/
